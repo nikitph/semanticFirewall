@@ -5,11 +5,11 @@ from pathlib import Path
 
 from app.adapter_harness import GeneratorMetrics, run_generator_harness
 from app.canonicalization import RuleCanonicalizer
-from app.models import Chunk, EvidenceDraft
+from app.models import Chunk
 from app.pipeline import Pipeline
 from app.proposals import (
+    HumanProposalGenerator,
     LLMStructuredProposalGenerator,
-    ManualGoldProposalGenerator,
     OpenIEProposalGenerator,
     RuleProposalGenerator,
     evidence_draft_json,
@@ -45,39 +45,6 @@ def main() -> None:
 
 
 def _generators():
-    manual_gold = ManualGoldProposalGenerator(
-        {
-            "chunk-1": [
-                EvidenceDraft(
-                    content="Net revenue was $4M in FY2024.",
-                    source_chunk_id="chunk-1",
-                    quoted_spans=["Net revenue was $4M in FY2024"],
-                )
-            ],
-            "chunk-2": [
-                EvidenceDraft(
-                    content="Net revenue was $4M after adjustments.",
-                    source_chunk_id="chunk-2",
-                    quoted_spans=["Net\n revenue   was $4M after adjustments"],
-                )
-            ],
-            "chunk-3": [
-                EvidenceDraft(
-                    content='The CEO said "Growth" was the theme.',
-                    source_chunk_id="chunk-3",
-                    quoted_spans=['said "Growth" - not contraction'],
-                )
-            ],
-            "chunk-4": [
-                EvidenceDraft(
-                    content="The company reported net revenue of $4M in FY2024.",
-                    source_chunk_id="chunk-4",
-                    quoted_spans=["company reported...FY2024"],
-                )
-            ],
-        }
-    )
-
     llm_structured = LLMStructuredProposalGenerator(
         {
             "chunk-1": [
@@ -150,8 +117,8 @@ def _generators():
     )
 
     return [
+        HumanProposalGenerator(ROOT / "human_proposals.json"),
         RuleProposalGenerator(),
-        manual_gold,
         llm_structured,
         openie,
     ]
@@ -171,6 +138,7 @@ def _print_table(rows: list[GeneratorMetrics]) -> None:
 def _write_report(rows: list[GeneratorMetrics], storage: Storage) -> None:
     graph = storage.get_graph_summary()
     audit_count = _audit_count(storage)
+    certificate_count = len(storage.get_transition_certificates())
     lines = [
         "# Adapter Harness Report",
         "",
@@ -183,6 +151,7 @@ def _write_report(rows: list[GeneratorMetrics], storage: Storage) -> None:
         f"- committed blackboard claims: {graph.claim_count}",
         f"- committed supports: {graph.support_count}",
         f"- audit events: {audit_count}",
+        f"- transition certificates: {certificate_count}",
         "",
         "## Generator Metrics",
         _header(),
@@ -199,6 +168,7 @@ def _write_report(rows: list[GeneratorMetrics], storage: Storage) -> None:
             "- Same ClaimID and SupportID hashing for every accepted proposal.",
             "- Same append-only audit log for accepted and rejected proposals.",
             "- Same provenance query surface after commit.",
+            "- Same Transition Admissibility Certificate shape for every proposal attempt.",
             "",
             "## Framing",
             "NLP proposes. Transactional Cognition commits.",

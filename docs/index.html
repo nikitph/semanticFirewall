@@ -542,7 +542,7 @@
             </div>
             <div class="proof-strip" aria-label="Key experiment counts">
               <div class="stat">
-                <strong>61</strong>
+                <strong>64</strong>
                 <span>tests passing</span>
               </div>
               <div class="stat">
@@ -594,7 +594,7 @@
                 <div class="source">Commit</div>
                 <div class="gate">
                   <b>Claim + support</b>
-                  <span>Deterministic hashes, audit, provenance</span>
+                  <span>Hashes, certificates, audit, provenance</span>
                 </div>
               </div>
             </div>
@@ -609,6 +609,8 @@
             <p class="lead">
               Existing systems can keep doing extraction. Grounding Firewall defines what happens
               next: typed proposal, deterministic gates, idempotent commit, append-only audit.
+              Every attempt emits a transition certificate with proposal hash, gate results, and
+              blackboard state hashes.
             </p>
           </div>
           <div class="grid-3">
@@ -668,7 +670,7 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>RuleProposalGenerator</td>
+                  <td>HumanProposalGenerator</td>
                   <td>4</td>
                   <td class="accepted">4</td>
                   <td>0</td>
@@ -677,7 +679,7 @@
                   <td>0</td>
                 </tr>
                 <tr>
-                  <td>ManualGoldProposalGenerator</td>
+                  <td>RuleProposalGenerator</td>
                   <td>4</td>
                   <td class="accepted">4</td>
                   <td>0</td>
@@ -714,7 +716,8 @@
           <div class="section-head">
             <h2>Pull the thread.</h2>
             <p class="lead">
-              A committed claim can be traced back to its supports, source chunks, and exact raw spans.
+              A committed claim can be traced back to its supports, source chunks, exact raw spans,
+              and Transition Admissibility Certificate.
             </p>
           </div>
           <div class="diagram">
@@ -734,6 +737,7 @@
                 <li>parse</li>
                 <li>source check</li>
                 <li>quote grounding</li>
+                <li>certificate</li>
               </ul>
             </article>
             <article class="lane">
@@ -743,6 +747,7 @@
                 <li>ClaimID</li>
                 <li>SupportID</li>
                 <li>raw offsets</li>
+                <li>pre/post state hash</li>
               </ul>
             </article>
           </div>

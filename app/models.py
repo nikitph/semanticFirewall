@@ -126,3 +126,22 @@ class ClaimProvenanceResponse(StrictBaseModel):
     canonical_claim: CanonicalClaim
     support_count: int
     supports: list[ProvenanceSupport]
+
+
+class GateResult(StrictBaseModel):
+    gate_number: int
+    gate_name: str
+    status: Literal["passed", "failed"]
+    reason: str | None = None
+    details: dict[str, Any] | None = None
+
+
+class TransitionAdmissibilityCertificate(StrictBaseModel):
+    certificate_id: str
+    proposal_hash: str
+    status: Literal["committed", "rejected"]
+    pre_state_hash: str
+    post_state_hash: str
+    gate_results: list[GateResult]
+    claim_id: str | None = None
+    support_id: str | None = None

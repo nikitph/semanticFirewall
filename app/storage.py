@@ -15,10 +15,12 @@ from app.models import (
     Chunk,
     EvidenceClaim,
     EvidenceSupport,
+    GateResult,
     GraphClaimSummary,
     GraphResponse,
     ProvenanceSupport,
     SpanRef,
+    TransitionAdmissibilityCertificate,
 )
 
 
@@ -69,6 +71,18 @@ class Storage:
                     failed_gate INTEGER,
                     reason TEXT,
                     details_json TEXT,
+                    claim_id TEXT,
+                    support_id TEXT
+                );
+
+                CREATE TABLE IF NOT EXISTS transition_certificates (
+                    certificate_id TEXT PRIMARY KEY,
+                    timestamp TEXT NOT NULL,
+                    proposal_hash TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    pre_state_hash TEXT NOT NULL,
+                    post_state_hash TEXT NOT NULL,
+                    gate_results_json TEXT NOT NULL,
                     claim_id TEXT,
                     support_id TEXT
                 );
@@ -257,6 +271,109 @@ class Storage:
             support_count=len(supports),
             supports=supports,
         )
+
+    def compute_blackboard_state_hash(self, connection: sqlite3.Connection | None = None) -> str:
+        close_connection = connection is None
+        active_connection = connection or self.connect()
+        try:
+            chunks = [
+                {
+                    "chunk_id": row["chunk_id"],
+                    "text_hash": row["text_hash"],
+                }
+                for row in active_connection.execute(
+                    "SELECT chunk_id, text_hash FROM chunks ORDER BY chunk_id"
+                ).fetchall()
+            ]
+            claims = [
+                {
+                    "claim_id": row["claim_id"],
+                    "canonical_json": row["canonical_json"],
+                }
+                for row in active_connection.execute(
+                    "SELECT claim_id, canonical_json FROM claims ORDER BY claim_id"
+                ).fetchall()
+            ]
+            supports = [
+                {
+                    "support_id": row["support_id"],
+                    "claim_id": row["claim_id"],
+                    "source_chunk_id": row["source_chunk_id"],
+                    "span_refs_json": row["span_refs_json"],
+                }
+                for row in active_connection.execute(
+                    """
+                    SELECT support_id, claim_id, source_chunk_id, span_refs_json
+                    FROM supports
+                    ORDER BY support_id
+                    """
+                ).fetchall()
+            ]
+            return sha256_hex(
+                canonical_json(
+                    {
+                        "chunks": chunks,
+                        "claims": claims,
+                        "supports": supports,
+                    }
+                )
+            )
+        finally:
+            if close_connection:
+                active_connection.close()
+
+    def insert_transition_certificate(
+        self,
+        certificate: TransitionAdmissibilityCertificate,
+        connection: sqlite3.Connection,
+    ) -> None:
+        connection.execute(
+            """
+            INSERT INTO transition_certificates (
+                certificate_id, timestamp, proposal_hash, status, pre_state_hash,
+                post_state_hash, gate_results_json, claim_id, support_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                certificate.certificate_id,
+                _utc_now(),
+                certificate.proposal_hash,
+                certificate.status,
+                certificate.pre_state_hash,
+                certificate.post_state_hash,
+                canonical_json([gate.model_dump(exclude_none=True) for gate in certificate.gate_results]),
+                certificate.claim_id,
+                certificate.support_id,
+            ),
+        )
+
+    def get_transition_certificates(self) -> list[TransitionAdmissibilityCertificate]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT certificate_id, proposal_hash, status, pre_state_hash, post_state_hash,
+                    gate_results_json, claim_id, support_id
+                FROM transition_certificates
+                ORDER BY timestamp, certificate_id
+                """
+            ).fetchall()
+
+        return [
+            TransitionAdmissibilityCertificate(
+                certificate_id=row["certificate_id"],
+                proposal_hash=row["proposal_hash"],
+                status=row["status"],
+                pre_state_hash=row["pre_state_hash"],
+                post_state_hash=row["post_state_hash"],
+                gate_results=[
+                    GateResult.model_validate(item) for item in json.loads(row["gate_results_json"])
+                ],
+                claim_id=row["claim_id"],
+                support_id=row["support_id"],
+            )
+            for row in rows
+        ]
 
 
 def _utc_now() -> str:

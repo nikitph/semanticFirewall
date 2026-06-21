@@ -32,6 +32,8 @@ grounded in the referenced source chunk.
 - The runtime applies the same parse, source-reference, grounding, canonicalization, hashing,
   audit, and provenance contract to every proposal source.
 - Rejected proposals leave structured audit traces.
+- Every proposal attempt emits a Transition Admissibility Certificate with pre/post state hashes,
+  proposal hash, gate results, and committed IDs when applicable.
 - Repeated valid proposals are idempotent for blackboard state while still appending audit events.
 - Provenance can be queried from committed claim back to exact raw spans.
 
@@ -49,6 +51,7 @@ flowchart LR
     G3 --> G4[Gate 4: canonical validation]
     G4 --> G5[Gate 5: hash + commit]
     G5 --> K[(Blackboard)]
+    G5 --> C[(Certificate)]
     G1 -. reject .-> A1[(Audit)]
     G2 -. reject .-> A1
     G3 -. reject .-> A1
@@ -69,6 +72,8 @@ Any proposal generator may emit draft JSON. The runtime guarantees:
 5. Claim and support commits are idempotent.
 6. Every proposal attempt is audited.
 7. Provenance is queryable after commit.
+8. Every transition emits a certificate linking proposal hash, gate results, pre-state hash,
+   post-state hash, and committed IDs.
 
 ## Results
 
@@ -95,13 +100,15 @@ The adapter harness routes heterogeneous proposal generators through the same ru
 
 | generator | proposals | committed | rejected Gate 1 | rejected Gate 2 | rejected Gate 3 | duplicate supports |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| HumanProposalGenerator | 4 | 4 | 0 | 0 | 0 | 0 |
 | RuleProposalGenerator | 4 | 4 | 0 | 0 | 0 | 0 |
-| ManualGoldProposalGenerator | 4 | 4 | 0 | 0 | 0 | 0 |
 | LLMStructuredProposalGenerator | 6 | 3 | 1 | 1 | 1 | 1 |
 | OpenIEProposalGenerator | 4 | 3 | 0 | 0 | 1 | 0 |
 
 The important result is not that one extractor wins. The important result is that every extractor
 is made governable by the same commit protocol.
+
+The current harness emits 18 proposal attempts, 18 audit events, and 18 transition certificates.
 
 ## API
 
@@ -131,6 +138,12 @@ curl http://127.0.0.1:8000/graph
 
 ```bash
 curl http://127.0.0.1:8000/claims/<claim_id>/provenance
+```
+
+### Query Transition Certificates
+
+```bash
+curl http://127.0.0.1:8000/certificates
 ```
 
 ## Install
@@ -184,7 +197,7 @@ app/
   proposals.py           # ProposalGenerator protocol and example adapters
   grounding.py           # Deterministic quote grounding
   pipeline.py            # Five-gate commit boundary
-  storage.py             # SQLite blackboard and audit log
+  storage.py             # SQLite blackboard, audit log, and certificates
   main.py                # FastAPI service
 experiments/
   run_experiments.py

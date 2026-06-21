@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
 
 from app.models import Chunk, EvidenceDraft
@@ -42,6 +43,20 @@ class ManualGoldProposalGenerator:
 
     def __init__(self, drafts_by_chunk_id: dict[str, list[EvidenceDraft]]):
         self.drafts_by_chunk_id = drafts_by_chunk_id
+
+    def propose(self, chunk: Chunk) -> list[GeneratedProposal]:
+        return [
+            _proposal(self.name, draft)
+            for draft in self.drafts_by_chunk_id.get(chunk.chunk_id, [])
+        ]
+
+
+class HumanProposalGenerator:
+    name = "HumanProposalGenerator"
+
+    def __init__(self, proposal_file: str | Path):
+        self.proposal_file = Path(proposal_file)
+        self.drafts_by_chunk_id = _load_human_drafts(self.proposal_file)
 
     def propose(self, chunk: Chunk) -> list[GeneratedProposal]:
         return [
@@ -116,3 +131,25 @@ def _first_sentence(text: str) -> str:
     if match:
         return match.group(0).strip()
     return text.strip()
+
+
+def _load_human_drafts(path: Path) -> dict[str, list[EvidenceDraft]]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    drafts_by_chunk_id: dict[str, list[EvidenceDraft]] = {}
+
+    if isinstance(raw, dict):
+        raw_items = raw.get("chunks", [])
+    else:
+        raw_items = raw
+
+    for item in raw_items:
+        if "drafts" in item:
+            chunk_id = item["chunk_id"]
+            drafts = [EvidenceDraft.model_validate(draft) for draft in item["drafts"]]
+        else:
+            draft = EvidenceDraft.model_validate(item)
+            chunk_id = draft.source_chunk_id
+            drafts = [draft]
+        drafts_by_chunk_id.setdefault(chunk_id, []).extend(drafts)
+
+    return drafts_by_chunk_id

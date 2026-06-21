@@ -54,3 +54,8 @@ def claim_provenance(claim_id: str):
     if provenance is None:
         raise HTTPException(status_code=404, detail="Claim not found")
     return provenance
+
+
+@app.get("/certificates")
+def transition_certificates():
+    return {"certificates": storage.get_transition_certificates()}

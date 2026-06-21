@@ -1,0 +1,44 @@
+{
+  "chunks": [
+    {
+      "chunk_id": "chunk-1",
+      "drafts": [
+        {
+          "content": "Net revenue was $4M in FY2024.",
+          "source_chunk_id": "chunk-1",
+          "quoted_spans": ["Net revenue was $4M in FY2024"]
+        }
+      ]
+    },
+    {
+      "chunk_id": "chunk-2",
+      "drafts": [
+        {
+          "content": "Net revenue was $4M after adjustments.",
+          "source_chunk_id": "chunk-2",
+          "quoted_spans": ["Net\n revenue   was $4M after adjustments"]
+        }
+      ]
+    },
+    {
+      "chunk_id": "chunk-3",
+      "drafts": [
+        {
+          "content": "The CEO said Growth was the theme.",
+          "source_chunk_id": "chunk-3",
+          "quoted_spans": ["said \"Growth\""]
+        }
+      ]
+    },
+    {
+      "chunk_id": "chunk-4",
+      "drafts": [
+        {
+          "content": "The company reported net revenue of $4M in FY2024.",
+          "source_chunk_id": "chunk-4",
+          "quoted_spans": ["company reported...FY2024"]
+        }
+      ]
+    }
+  ]
+}

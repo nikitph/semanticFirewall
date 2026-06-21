@@ -72,3 +72,12 @@ def test_api_ingest_propose_reject_graph_and_health(tmp_path, monkeypatch):
 
     missing = client.get("/claims/not-a-real-claim/provenance")
     assert missing.status_code == 404
+
+    certificates = client.get("/certificates")
+    assert certificates.status_code == 200
+    certificates_json = certificates.json()
+    assert len(certificates_json["certificates"]) == 2
+    assert {item["status"] for item in certificates_json["certificates"]} == {
+        "committed",
+        "rejected",
+    }
