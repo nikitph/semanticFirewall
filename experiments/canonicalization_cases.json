@@ -1,0 +1,67 @@
+[
+  {
+    "case_name": "revenue canonical",
+    "content": "Net revenue was $4M in FY2024.",
+    "gold_cluster": "net-revenue-4m-fy2024"
+  },
+  {
+    "case_name": "revenue equivalent lowercase",
+    "content": "net revenue was $4m in FY2024",
+    "gold_cluster": "net-revenue-4m-fy2024"
+  },
+  {
+    "case_name": "revenue different amount",
+    "content": "Net revenue was $5M in FY2024.",
+    "gold_cluster": "net-revenue-5m-fy2024"
+  },
+  {
+    "case_name": "revenue different year",
+    "content": "Net revenue was $4M in FY2025.",
+    "gold_cluster": "net-revenue-4m-fy2025"
+  },
+  {
+    "case_name": "gross margin canonical",
+    "content": "Gross margin was 61%.",
+    "gold_cluster": "gross-margin-61"
+  },
+  {
+    "case_name": "gross margin equivalent",
+    "content": "gross margin was 61%",
+    "gold_cluster": "gross-margin-61"
+  },
+  {
+    "case_name": "gross margin different value",
+    "content": "Gross margin was 16%.",
+    "gold_cluster": "gross-margin-16"
+  },
+  {
+    "case_name": "acquisition canonical",
+    "content": "Acme acquired BetaCo.",
+    "gold_cluster": "acme-acquired-betaco"
+  },
+  {
+    "case_name": "acquisition equivalent",
+    "content": "ACME acquired betaco",
+    "gold_cluster": "acme-acquired-betaco"
+  },
+  {
+    "case_name": "acquisition different object",
+    "content": "Acme acquired GammaCo.",
+    "gold_cluster": "acme-acquired-gammaco"
+  },
+  {
+    "case_name": "bookings q4 canonical",
+    "content": "Bookings increased in Q4.",
+    "gold_cluster": "bookings-increased-q4"
+  },
+  {
+    "case_name": "bookings q4 equivalent",
+    "content": "bookings increased in Q4",
+    "gold_cluster": "bookings-increased-q4"
+  },
+  {
+    "case_name": "bookings q3 different",
+    "content": "Bookings increased in Q3.",
+    "gold_cluster": "bookings-increased-q3"
+  }
+]

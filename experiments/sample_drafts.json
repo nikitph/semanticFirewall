@@ -1,0 +1,56 @@
+[
+  {
+    "case_name": "valid exact quote",
+    "expected_gate": null,
+    "draft": {
+      "content": "Net revenue was $4M in FY2024.",
+      "source_chunk_id": "chunk-1",
+      "quoted_spans": ["Net revenue was $4M in FY2024"]
+    }
+  },
+  {
+    "case_name": "valid whitespace normalization",
+    "expected_gate": null,
+    "draft": {
+      "content": "Net revenue was $4M after adjustments.",
+      "source_chunk_id": "chunk-2",
+      "quoted_spans": ["net revenue was $4m"]
+    }
+  },
+  {
+    "case_name": "valid smart punctuation normalization",
+    "expected_gate": null,
+    "draft": {
+      "content": "The CEO said Growth was the theme.",
+      "source_chunk_id": "chunk-3",
+      "quoted_spans": ["said \"growth\" - not contraction"]
+    }
+  },
+  {
+    "case_name": "valid ellipsis quote",
+    "expected_gate": null,
+    "draft": {
+      "content": "The company reported net revenue of $4M in FY2024.",
+      "source_chunk_id": "chunk-4",
+      "quoted_spans": ["company reported...FY2024"]
+    }
+  },
+  {
+    "case_name": "invalid phantom chunk ID",
+    "expected_gate": 2,
+    "draft": {
+      "content": "Missing chunk content.",
+      "source_chunk_id": "missing",
+      "quoted_spans": ["Missing chunk content"]
+    }
+  },
+  {
+    "case_name": "invalid hallucinated quote",
+    "expected_gate": 3,
+    "draft": {
+      "content": "Net revenue was $5M in FY2024.",
+      "source_chunk_id": "chunk-1",
+      "quoted_spans": ["Net revenue was $5M"]
+    }
+  }
+]

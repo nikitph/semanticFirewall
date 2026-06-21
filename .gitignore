@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+*.pyc
+grounding_firewall.db
+experiments/experiment.db
+experiments/adapter_harness.db
